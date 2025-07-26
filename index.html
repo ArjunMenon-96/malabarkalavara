@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Coming Soon</title>
+    <style>
+        /* --- Font Loading --- */
+        @font-face {
+            font-family: 'Basement Grotesque';
+            font-style: normal;
+            font-weight: 900;
+            font-display: swap;
+            /* Updated path to the font file in the same directory */
+            src: url('BasementGrotesque-Black_v1.202.otf') format('opentype');
+        }
+
+        /* --- Basic Setup --- */
+        body, html {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            background-color: #f6ead4;
+            font-family: 'Basement Grotesque', sans-serif; /* Apply font to body */
+            overflow: hidden;
+        }
+        
+        /* --- Background Layer --- */
+        .color-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background-color: #c48027;
+            opacity: 0;
+            z-index: 1; 
+            transition: opacity 0.4s ease-out;
+        }
+
+        /* --- Centering Container --- */
+        .container {
+            height: 100%;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            z-index: 2; 
+        }
+
+        /* --- 'coming soon' Text Styling --- */
+        .coming-soon {
+            color: #c48027; 
+            font-weight: 900;
+            font-size: 5vw; 
+            text-transform: lowercase;
+            white-space: nowrap;
+            transition: transform 0.2s ease-out, opacity 0.4s ease-out;
+        }
+        
+        /* --- 'coconut realm' Text Styling --- */
+        .realm-text {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 3;
+            font-weight: 900;
+            color: #f6ead4; 
+            font-size: 4vw;
+            text-transform: lowercase;
+            white-space: nowrap;
+            opacity: 0;
+            transition: opacity 0.5s ease-in-out;
+        }
+        
+        .realm-text.visible {
+            opacity: 1;
+        }
+        
+        @media (min-width: 768px) {
+            .coming-soon {
+                font-size: 3rem; 
+            }
+            .realm-text {
+                font-size: 2.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    
+    <div class="color-bg" id="color-bg"></div>
+
+    <div class="container">
+        <div class="coming-soon" id="zoom-text">
+            മലബാർ കലവറ
+        </div>
+        <div class="realm-text" id="realm-text">
+            coming soon
+        </div>
+    </div>
+
+    <script>
+        const zoomText = document.getElementById('zoom-text');
+        const realmText = document.getElementById('realm-text');
+        const colorBg = document.getElementById('color-bg');
+
+        let currentScale = 1.0; 
+        const minScale = 0.5;
+        const maxScale = 250.0; 
+        const scaleStep = 5;
+
+        const bgTransitionStart = 70.0; 
+        const textRevealThreshold = 100.0;
+
+        function updateScale(direction) {
+            currentScale += direction * scaleStep;
+            currentScale = Math.max(minScale, Math.min(maxScale, currentScale));
+            zoomText.style.transform = `scale(${currentScale})`;
+            
+            if (currentScale >= bgTransitionStart) {
+                const transitionProgress = Math.min(1.0, (currentScale - bgTransitionStart) / (textRevealThreshold - bgTransitionStart));
+                colorBg.style.opacity = transitionProgress;
+                zoomText.style.opacity = 1 - transitionProgress;
+            } else {
+                colorBg.style.opacity = 0;
+                zoomText.style.opacity = 1;
+            }
+
+            if (currentScale >= textRevealThreshold) {
+                realmText.classList.add('visible');
+            } else {
+                realmText.classList.remove('visible');
+            }
+        }
+
+        window.addEventListener('wheel', (event) => {
+            event.preventDefault();
+            const direction = event.deltaY > 0 ? 1 : -1;
+            updateScale(direction);
+        }, { passive: false });
+
+        let touchStartY = 0;
+        window.addEventListener('touchstart', (event) => {
+            touchStartY = event.touches[0].clientY;
+        }, { passive: false });
+        window.addEventListener('touchmove', (event) => {
+            event.preventDefault();
+            const currentTouchY = event.touches[0].clientY;
+            if (Math.abs(touchStartY - currentTouchY) > 5) {
+                const direction = touchStartY > currentTouchY ? 1 : -1;
+                updateScale(direction);
+                touchStartY = currentTouchY;
+            }
+        }, { passive: false });
+    </script>
+
+</body>
+</html>
